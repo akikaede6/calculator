@@ -82,11 +82,12 @@ void Calculator::onCalculatorClicked()
         else
             m_input->setText(m_input->text().prepend("-"));
     }
-    else if (m_input->text().back() == "+" ||
+    else if (!m_input->text().isEmpty() &&
+             (m_input->text().back() == "+" ||
              m_input->text().back() == "-" ||
              m_input->text().back() == "*" ||
              m_input->text().back() == "/" ||
-             m_input->text().back() == "%")
+             m_input->text().back() == "%"))
         m_input->setText(m_input->text().replace(m_input->text().back(), operateBtn->text()));
     else
         m_input->setText(m_input->text() + operateBtn->text());
