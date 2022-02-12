@@ -10,12 +10,10 @@ CONFIG += c++11
 
 SOURCES += \
     calculator.cpp \
-    main.cpp \
-    mainwindow.cpp
+    main.cpp
 
 HEADERS += \
-    calculator.h \
-    mainwindow.h
+    calculator.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

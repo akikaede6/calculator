@@ -1,15 +1,14 @@
 #include "calculator.h"
 
 #include <QGridLayout>
-#include <QDebug>
 #include <QScriptEngine>
 #include <QPushButton>
 #include <QLineEdit>
-#include <iostream>
 
 Calculator::Calculator(QWidget *parent)
     : QWidget{parent}
 {
+    setFixedSize(300, 400);
     initUI();
     initConnection();
 }
