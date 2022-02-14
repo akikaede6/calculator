@@ -3,8 +3,6 @@
 
 #include <QWidget>
 
-enum {buttonNumber = 10};
-
 class QPushButton;
 class QLineEdit;
 class Calculator : public QWidget
@@ -15,20 +13,22 @@ public:
 
     void initUI();
     void initConnection() const;
-    QPushButton *generateButton(QString text);
+    auto generateButton(const QString &text) const;
 
 public slots:
     void onDigitClicked();
     void onCalculatorClicked();
     void onEqClicked();
     void onClearClicked();
-    void onSignClicked();
 
 private:
+    enum { buttonNumber = 10 };
+    enum ROW { ROW_ZERO, ROW_ONE, ROW_TWO, ROW_THREE, ROW_FOUR, ROW_FIVE };
+    enum COL { COL_ZERO, COL_ONE, COL_TWO, COL_THREE, COL_FOUR, COL_FIVE };
+    const int width = 300;
+    const int height = 400;
     QLineEdit *m_input;
-
-    QPushButton *m_digitButton[buttonNumber];
-
+    std::array<QPushButton *, buttonNumber> m_digitButton;
     QPushButton *m_eq;
     QPushButton *m_clear;
 };

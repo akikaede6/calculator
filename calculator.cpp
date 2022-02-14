@@ -1,46 +1,58 @@
 #include "calculator.h"
+#include "calculate.h"
 
 #include <QGridLayout>
-#include <QScriptEngine>
-#include <QPushButton>
 #include <QLineEdit>
+#include <QPushButton>
+#include <QRegExpValidator>
+#include <QScriptEngine>
 
 Calculator::Calculator(QWidget *parent)
     : QWidget{parent}
+    , m_input{new QLineEdit}
+    , m_digitButton{nullptr}
+    , m_eq{new QPushButton("=")}
+    , m_clear{new QPushButton("C")}
 {
-    setFixedSize(300, 400);
+    setFixedSize(width, height);
     initUI();
     initConnection();
 }
 
+auto Calculator::generateButton(const QString &text) const
+{
+    auto *button = new QPushButton(text);
+    connect(button, &QPushButton::clicked, this, &Calculator::onCalculatorClicked);
+    return button;
+}
+
 void Calculator::initUI()
 {
-    QGridLayout *mainlayout = new QGridLayout(this);
-    m_input = new QLineEdit;
+    auto *mainlayout = new QGridLayout(this);
 
-    m_eq = new QPushButton("=");
-    m_clear = new QPushButton("C");
+    QRegExp regx("[1-9][0-9]+$");
+    m_input->setValidator(new QRegExpValidator(regx, this));
+    m_input->setAlignment(Qt::AlignRight);
 
     for (int i = 0; i < buttonNumber; i++)
         m_digitButton[i] = new QPushButton(QString::number(i));
 
-    mainlayout->addWidget(m_input, 0, 0, 1, 4);
+    mainlayout->addWidget(m_input, ROW_ZERO, COL_ZERO, 1, 4);
 
-    mainlayout->addWidget(m_clear, 1, 0);
-    mainlayout->addWidget(generateButton("+/-"), 1, 1);
-    mainlayout->addWidget(generateButton("%"), 1, 2);
-    mainlayout->addWidget(generateButton("/"), 1, 3);
+    mainlayout->addWidget(m_clear, ROW_ONE, COL_ZERO);
+    mainlayout->addWidget(generateButton("+/-"), ROW_ONE, COL_ONE);
+    mainlayout->addWidget(generateButton("%"), ROW_ONE, COL_TWO);
+    mainlayout->addWidget(generateButton("/"), ROW_ONE, COL_THREE);
 
-    mainlayout->addWidget(generateButton("*"), 2, 3);
-    mainlayout->addWidget(generateButton("-"), 3, 3);
-    mainlayout->addWidget(generateButton("+"), 4, 3);
+    mainlayout->addWidget(generateButton("*"), ROW_TWO, COL_THREE);
+    mainlayout->addWidget(generateButton("-"), ROW_THREE, COL_THREE);
+    mainlayout->addWidget(generateButton("+"), ROW_FOUR, COL_THREE);
 
-    mainlayout->addWidget(m_digitButton[0], 5, 0, 1, 2);
-    mainlayout->addWidget(generateButton("."), 5, 2);
-    mainlayout->addWidget(m_eq, 5, 3);
+    mainlayout->addWidget(m_digitButton[0], ROW_FIVE, COL_ZERO, 1, 2);
+    mainlayout->addWidget(generateButton("."), ROW_FIVE, COL_TWO);
+    mainlayout->addWidget(m_eq, ROW_FIVE, COL_THREE);
 
-    for (int i = 1; i < buttonNumber; i++)
-    {
+    for (int i = 1; i < buttonNumber; i++) {
         int row = (buttonNumber - 1 - i) / 3 + 2;
         int col = (i + 2) % 3;
         mainlayout->addWidget(m_digitButton[i], row, col);
@@ -51,22 +63,15 @@ void Calculator::initUI()
 
 void Calculator::initConnection() const
 {
-    for (int i = 0; i < buttonNumber; i++)
-        connect(m_digitButton[i], &QPushButton::clicked, this, &Calculator::onDigitClicked);
+    for (const auto &button : m_digitButton)
+        connect(button, &QPushButton::clicked, this, &Calculator::onDigitClicked);
     connect(m_eq, &QPushButton::clicked, this, &Calculator::onEqClicked);
     connect(m_clear, &QPushButton::clicked, this, &Calculator::onClearClicked);
 }
 
-QPushButton *Calculator::generateButton(QString text)
-{
-    QPushButton *button = new QPushButton(text);
-    connect(button, &QPushButton::clicked, this, &Calculator::onCalculatorClicked);
-    return button;
-}
-
 void Calculator::onDigitClicked()
 {
-    QPushButton *digitBtn = qobject_cast<QPushButton *>(sender());
+    auto *digitBtn = qobject_cast<QPushButton *>(sender());
     if (m_input->text() == "0")
         m_input->setText(digitBtn->text());
     m_input->setText(m_input->text() + digitBtn->text());
@@ -74,20 +79,16 @@ void Calculator::onDigitClicked()
 
 void Calculator::onCalculatorClicked()
 {
-    QPushButton *operateBtn = qobject_cast<QPushButton *>(sender());
-    if (operateBtn->text() == "+/-")
-    {
+    auto *operateBtn = qobject_cast<QPushButton *>(sender());
+    if (operateBtn->text() == "+/-") {
         if (m_input->text().front() == "-")
             m_input->setText(m_input->text().remove(0, 1));
         else
             m_input->setText(m_input->text().prepend("-"));
-    }
-    else if (!m_input->text().isEmpty() &&
-             (m_input->text().back() == "+" ||
-             m_input->text().back() == "-" ||
-             m_input->text().back() == "*" ||
-             m_input->text().back() == "/" ||
-             m_input->text().back() == "%"))
+    } else if (!m_input->text().isEmpty()
+               && (m_input->text().back() == "+" || m_input->text().back() == "-"
+                   || m_input->text().back() == "*" || m_input->text().back() == "/"
+                   || m_input->text().back() == "%"))
         m_input->setText(m_input->text().replace(m_input->text().back(), operateBtn->text()));
     else
         m_input->setText(m_input->text() + operateBtn->text());
@@ -95,15 +96,15 @@ void Calculator::onCalculatorClicked()
 
 void Calculator::onEqClicked()
 {
-    m_input->setText(QScriptEngine().evaluate(m_input->text()).toString());
+    //    m_input->setText(QScriptEngine().evaluate(m_input->text()).toString());
+    Calculate cal;
+    if (!cal.parseText(m_input->text()))
+        m_input->setText("error");
+    else
+        m_input->setText(cal.result());
 }
 
 void Calculator::onClearClicked()
 {
     m_input->clear();
-}
-
-void Calculator::onSignClicked()
-{
-
 }
