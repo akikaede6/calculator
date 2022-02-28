@@ -6,19 +6,28 @@
 
 class Calculate : public QObject
 {
+    Q_OBJECT
 public:
     explicit Calculate(QObject *parent = nullptr);
-    bool parseText(const QString &text);
-    auto evaluate(QString operate, int a, int b);
-    auto evaluate(QString operate, double a, double b);
-    bool precede(QString input, QString top);
-    void calc(QStack<QString> &numbers, QStack<QString> &operators, bool isFloatNumber);
-    QString result();
-    bool isFloat(const QString &text);
+
+    static auto evaluate(const QString &operate, const int &a, const int &b);
+    static auto evaluate(const QString &operate, const double &a, const double &b);
+    static bool precede(const QString &input, const QString &top);
+    static void calc(QStack<QString> &numbers, QStack<QString> &operators, bool isFloatNumber);
+    static bool isFloat(const QString &text);
+    void setResult();
+
+public slots:
+    void parseText(const QString &text);
+
+signals:
+    void finished(bool valid, QString result);
 
 private:
     QStack<QString> m_operators;
     QStack<QString> m_numbers;
+    QString m_result;
+    bool m_valid;
 };
 
 #endif // CALCULATE_H

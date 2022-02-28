@@ -1,17 +1,23 @@
 #include "calculate.h"
 
+#include <iostream>
+
 Calculate::Calculate(QObject *parent)
     : QObject{parent}
+    , m_valid{false}
 {}
 
-bool Calculate::parseText(const QString &text)
+void Calculate::parseText(const QString &text)
 {
     QString number;
     for (int i = 0; i < text.size(); i++) {
         if (text.at(text.size() - 1) == "+" || text.at(text.size() - 1) == "-"
             || text.at(text.size() - 1) == "*" || text.at(text.size() - 1) == "/"
-            || text.at(text.size() - 1) == "%")
-            return false;
+            || text.at(text.size() - 1) == "%") {
+            m_valid = false;
+            return;
+        }
+        m_valid = true;
         if (text.at(i).isNumber() || text.at(i) == ".") {
             number.append(text.at(i));
             if (i == text.size() - 1) {
@@ -31,44 +37,47 @@ bool Calculate::parseText(const QString &text)
     while (!m_operators.empty()) {
         calc(m_numbers, m_operators, isFloat(text));
     }
-    return true;
+    setResult();
+    std::cout << m_numbers.top().toStdString();
 }
 
-auto Calculate::evaluate(QString operate, int a, int b)
+void Calculate::setResult()
 {
-    if (operate == '+') {
+    if (isFloat(m_numbers.top()))
+        m_result = QString::number(m_numbers.top().toDouble());
+    else
+        m_result = QString::number(m_numbers.top().toInt());
+    emit finished(m_valid, m_result);
+}
+
+auto Calculate::evaluate(const QString &operate, const int &a, const int &b)
+{
+    if (operate == '+')
         return a + b;
-    } else if (operate == '-') {
+    if (operate == '-')
         return a - b;
-    } else if (operate == '*') {
+    if (operate == '*')
         return a * b;
-    } else if (operate == '/') {
+    if (operate == '/')
         return a / b;
-    } else {
-        return a % b;
-    }
+    return a % b;
 }
 
-auto Calculate::evaluate(QString operate, double a, double b)
+auto Calculate::evaluate(const QString &operate, const double &a, const double &b)
 {
-    if (operate == '+') {
+    if (operate == '+')
         return a + b;
-    } else if (operate == '-') {
+    if (operate == '-')
         return a - b;
-    } else if (operate == '*') {
+    if (operate == '*')
         return a * b;
-    } else if (operate == '/') {
+    if (operate == '/')
         return a / b;
-    } /*else {
-        return false
-    }*/
 }
 
-bool Calculate::precede(QString input, QString top)
+bool Calculate::precede(const QString &input, const QString &top)
 {
-    if ((input == "*" || input == "/") && (top == "+" || top == "-"))
-        return true;
-    return false;
+    return (input == "*" || input == "/") && (top == "+" || top == "-");
 }
 
 void Calculate::calc(QStack<QString> &numbers, QStack<QString> &operators, bool isFloatNumber)
@@ -90,16 +99,7 @@ void Calculate::calc(QStack<QString> &numbers, QStack<QString> &operators, bool 
     }
 }
 
-QString Calculate::result()
-{
-    if (isFloat(m_numbers.top()))
-        return QString::number(m_numbers.top().toDouble());
-    return QString::number(m_numbers.top().toInt());
-}
-
 bool Calculate::isFloat(const QString &text)
 {
-    if (text.contains("."))
-        return true;
-    return false;
+    return text.contains(".");
 }

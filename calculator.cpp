@@ -1,4 +1,4 @@
-#include "calculator.h"
+﻿#include "calculator.h"
 #include "calculate.h"
 
 #include <QGridLayout>
@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QRegExpValidator>
 #include <QScriptEngine>
+#include <QThread>
 
 Calculator::Calculator(QWidget *parent)
     : QWidget{parent}
@@ -97,14 +98,18 @@ void Calculator::onCalculatorClicked()
 void Calculator::onEqClicked()
 {
     //    m_input->setText(QScriptEngine().evaluate(m_input->text()).toString());
-    Calculate cal;
-    if (!cal.parseText(m_input->text()))
-        m_input->setText("error");
-    else
-        m_input->setText(cal.result());
+    emit start(m_input->text());
 }
 
 void Calculator::onClearClicked()
 {
     m_input->clear();
+}
+
+void Calculator::onCalFinished(bool valid, const QString &result)
+{
+    if (!valid)
+        m_input->setText("error");
+    else
+        m_input->setText(result);
 }

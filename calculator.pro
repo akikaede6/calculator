@@ -11,11 +11,13 @@ CONFIG += c++20
 SOURCES += \
     calculate.cpp \
     calculator.cpp \
-    main.cpp
+    main.cpp \
+    workmanager.cpp
 
 HEADERS += \
     calculate.h \
-    calculator.h
+    calculator.h \
+    workmanager.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

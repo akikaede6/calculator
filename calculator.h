@@ -5,6 +5,7 @@
 
 class QPushButton;
 class QLineEdit;
+class Calculate;
 class Calculator : public QWidget
 {
     Q_OBJECT
@@ -20,6 +21,10 @@ public slots:
     void onCalculatorClicked();
     void onEqClicked();
     void onClearClicked();
+    void onCalFinished(bool valid, const QString &result);
+
+signals:
+    void start(const QString &text);
 
 private:
     enum { buttonNumber = 10 };
